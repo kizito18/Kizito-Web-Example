@@ -2,6 +2,8 @@ package com.my.zitos.multibroser.kizitowebexample
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.view.View
 import android.view.ViewGroup
@@ -301,10 +303,58 @@ fun BrowserAutoRefresh(
                         request: WebResourceRequest?
                     ): Boolean {
 
+                        if (view != null)
+                        {
+                            if (url != null && url!!.contains("intent://")) {
+                                val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                                if (intent != null) {
+                                    val fallbackUrl = intent.getStringExtra("browser_fallback_url")
+                                    return if (fallbackUrl != null) {
+                                        view.loadUrl(fallbackUrl)
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                }
+                            } else if (url!!.startsWith("tel:")) {
+                                val intent = Intent(Intent.ACTION_DIAL)
+                                intent.data = Uri.parse(url)
+                                // view?.context?.startActivity(intent)
+                                context.startActivity(intent)
+                                return true
+                            } else if (url!!.startsWith("mailto:")) {
+                                val intent = Intent(Intent.ACTION_VIEW)
+                                val data = Uri.parse(
+                                    url + Uri.encode("subject") + "&body=" + Uri.encode(
+                                        "body"
+                                    )
+                                )
+                                intent.data = data
+                                context.startActivity(intent)
+                                // view?.context?.startActivity(intent)
+                                return true
+                            }
+                            return false
+                        }else{
+                            return super.shouldOverrideUrlLoading(view, request)
+                        }
+
+                    }
+
+                    /*
+
+
+                    override fun shouldOverrideUrlLoading(
+                        view: WebView?,
+                        request: WebResourceRequest?
+                    ): Boolean {
+
 
                         return super.shouldOverrideUrlLoading(view, request)
 
                     }
+
+                     */
 
 
 
